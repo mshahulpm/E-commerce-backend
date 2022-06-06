@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+  SUB_ADMIN
+}
+
+model User {
+  userId    String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  pasword   String
+  firstName String
+  lastName  String?
+  email     String    @unique
+  roles     Role      @default(USER)
+  phone     String?   @unique
+  Addresses Address[]
+  cart      Cart?
+  orders    Order[]
+}
+
+model Address {
+  addressId String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  firstName String
+  lastName  String
+  houseNo   String
+  street    String
+  locality  String
+  city      String
+  state     String
+  pinCode   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [userId])
+}
+
+model Category {
+  categoryId  String             @id @default(cuid())
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  name        String
+  description String?            @default("")
+  banner      String?
+  thumbnail   String
+  products    CategoryProducts[]
+}
+
+model CategoryProducts {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  categoryId String
+  productId  String
+  category   Category @relation(fields: [categoryId], references: [categoryId])
+  product    Product  @relation(fields: [productId], references: [productId])
+}
+
+model Product {
+  productId       String             @id @default(cuid())
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  name            String
+  description     String?            @default("")
+  categories      CategoryProducts[]
+  price           Float
+  stock           Int
+  discount        Float
+  images          ProductImage[]
+  max_quantity    Int
+  min_quantity    Int
+  seo_title       String             @default("")
+  seo_description String?            @default("")
+  seo_keywords    String?            @default("")
+  weight          Float?
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+}
+
+model ProductImage {
+  productImageId String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  url            String
+  productId      String
+  product        Product  @relation(fields: [productId], references: [productId])
+}
+
+model Cart {
+  cartId    String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [userId])
+  items     CartItem[]
+}
+
+model CartItem {
+  cartItemId String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  productId  String
+  product    Product  @relation(fields: [productId], references: [productId])
+  quantity   Int
+  cartId     String
+  cart       Cart     @relation(fields: [cartId], references: [cartId])
+}
+
+enum OrderStatus {
+  INITIATED
+  FAILED
+  PENDING
+  PROCESSING
+  CANCELLED
+  SHIPPED
+  DELIVERED
+  RETURNED
+}
+
+model Order {
+  orderId     String      @id @default(cuid())
+  orderNo     String      @unique
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userId      String
+  user        User        @relation(fields: [userId], references: [userId])
+  orderStatus OrderStatus @default(INITIATED)
+  items       OrderItem[]
+  payment     Payment?
+}
+
+model OrderItem {
+  orderItemId String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  productId   String
+  product     Product  @relation(fields: [productId], references: [productId])
+  quantity    Int
+  price       Float
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [orderId])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum  PaymentMethod {
+  COD
+  ONLINE
+}
+
+model Payment {
+  paymentId     String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [orderId])
+  amount        Float
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod @default(COD)
+  
+}
