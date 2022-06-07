@@ -1,44 +1,28 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express, { Express, Request, Response, NextFunction } from 'express';
-
-import UserRoute from './Modules/User';
+import { error500, logger, notFound404, getUserDetails } from './middlewares/common';
+import { routes } from './routes';
 
 const app: Express = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log('Request: ', req.method, req.url);
-    next();
+// logger
+app.use(logger);
+// user details 
+app.use(getUserDetails);
+
+routes.forEach(route => {
+    app.use(route.path, route.router);
 })
-
-
-
-app.get('/', (req: Request, res: Response) => {
-    res.status(200).json({ message: 'Hello World!' });
-});
-
-
-app.use('/users', UserRoute);
-
 
 // 404 handler
-app.use('*', (req: Request, res: Response, next: NextFunction) => {
-    res.status(404).json({
-        message: 'Not Found'
-    })
-})
+app.use('*', notFound404)
 
 // 500 Internal Server Error
-app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-
-    console.log('Error: ', error);
-    res.status(500).json({
-        message: error.message,
-    })
-})
+app.use(error500)
 
 
 app.listen(8000, () => {

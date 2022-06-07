@@ -1,6 +1,5 @@
 import { Request, Response, Router } from "express";
-import { UserController } from "./controller";
-const { login } = UserController;
+import { userBasicUpdate, changePassword } from "./controller";
 
 const router: Router = Router();
 
@@ -9,15 +8,10 @@ router.route('/')
         res.status(200).json({ message: 'Hello users!' });
     })
 
-router.route('/login')
-    .post(login);
+router.route('/update-basic-info')
+    .post(userBasicUpdate)
 
-router.route('/:id')
-    .get((req: Request, res: Response) => {
-        if (req.params.id === '1') {
-            throw new Error('User not found');
-        }
-        res.status(200).json({ message: 'Hello user with id: ' + req.params.id });
-    })
+router.route('/change-password')
+    .post(changePassword)
 
 export default router;

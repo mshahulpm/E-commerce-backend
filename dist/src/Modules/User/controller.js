@@ -9,23 +9,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserController = void 0;
-const jwt_1 = require("../../middlewares/jwt");
-const common_1 = require("../../types/common");
-exports.UserController = {
-    login: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+exports.changePassword = exports.userBasicUpdate = void 0;
+const bcrypt_1 = require("../../utils/bcrypt");
+const user_1 = require("../../services/user");
+function userBasicUpdate(req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const userId = req.user.userId;
         try {
-            const token = yield (0, jwt_1.signToken)({
-                id: 1,
-                name: 'John Doe',
-                role: common_1.UserRoleKey.role_1
-            });
+            const updatedUser = yield (0, user_1.updateUser)(userId, req.body);
             res.status(200).json({
-                token
+                message: 'Basic info updated successfully',
+                updatedUser
             });
         }
         catch (error) {
             next(error);
         }
-    })
-};
+    });
+}
+exports.userBasicUpdate = userBasicUpdate;
+function changePassword(req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const userId = req.user.userId;
+        const { oldPassword, newPassword } = req.body;
+        try {
+            const oldPasswordFromDB = (yield (0, user_1.getOneUserById)(userId)).password;
+            if (!(yield (0, bcrypt_1.comparePassword)(oldPassword, oldPasswordFromDB))) {
+                return res.status(401).json({
+                    message: 'Invalid old password'
+                });
+            }
+            const hashedPassword = yield (0, bcrypt_1.hashPassword)(newPassword);
+            yield (0, user_1.updateUser)(userId, { password: hashedPassword });
+            res.status(200).json({
+                message: 'Password changed successfully'
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+}
+exports.changePassword = changePassword;

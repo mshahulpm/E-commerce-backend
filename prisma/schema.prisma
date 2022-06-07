@@ -16,16 +16,24 @@ enum Role {
   SUB_ADMIN
 }
 
+enum Gender {
+  MALE
+  FEMALE
+  OTHERS
+}
+
 model User {
   userId    String    @id @default(cuid())
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  pasword   String
-  firstName String
+  password   String
+  firstName String?
   lastName  String?
   email     String    @unique
+  emailVerified Boolean @default(false)
   roles     Role      @default(USER)
   phone     String?   @unique
+  gender    Gender? 
   Addresses Address[]
   cart      Cart?
   orders    Order[]

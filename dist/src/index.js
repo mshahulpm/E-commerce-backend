@@ -6,31 +6,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
-const User_1 = __importDefault(require("./Modules/User"));
+const common_1 = require("./middlewares/common");
+const routes_1 = require("./routes");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-app.use((req, res, next) => {
-    console.log('Request: ', req.method, req.url);
-    next();
+// logger
+app.use(common_1.logger);
+// user details 
+app.use(common_1.getUserDetails);
+routes_1.routes.forEach(route => {
+    app.use(route.path, route.router);
 });
-app.get('/', (req, res) => {
-    res.status(200).json({ message: 'Hello World!' });
-});
-app.use('/users', User_1.default);
 // 404 handler
-app.use('*', (req, res, next) => {
-    res.status(404).json({
-        message: 'Not Found'
-    });
-});
+app.use('*', common_1.notFound404);
 // 500 Internal Server Error
-app.use((error, req, res, next) => {
-    console.log('Error: ', error);
-    res.status(500).json({
-        message: error.message,
-    });
-});
+app.use(common_1.error500);
 app.listen(8000, () => {
     console.log('Example app listening on port 8000!');
 });
