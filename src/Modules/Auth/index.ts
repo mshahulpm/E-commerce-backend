@@ -12,7 +12,7 @@ router.route('/signup')
     .post(signup)
 
 router.route('/send-otp')
-    .get(sendOtp)
+    .post(sendOtp)
 
 router.route('/verify-otp')
     .post(verifyOtp)
