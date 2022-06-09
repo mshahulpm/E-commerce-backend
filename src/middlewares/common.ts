@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import Joi from "joi";
 import { decodeToken } from "../utils/jwt";
 
 
@@ -41,4 +42,22 @@ export async function getUserDetails(req: Request, res: Response, next: NextFunc
         next(error);
     }
 
+}
+
+export function JoiValidator(schema?: Joi.Schema) {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (!schema) return next();
+        const result = schema.validate({
+            ...req.body,
+            ...req.query,
+            ...req.params
+        });
+        if (result.error) {
+            return res.status(400).json({
+                message: result.error.message,
+                errors: result.error
+            })
+        }
+        next();
+    }
 }

@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client'
-import { Without } from 'types/common'
+import { Without } from 'src/types/common'
 const { user, } = new PrismaClient()
 const { Prisma__UserClient } = Prisma
 

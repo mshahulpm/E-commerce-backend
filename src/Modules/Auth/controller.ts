@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { createUser, getOneUserByEmail, verifyUser } from "../../services/user";
+import { createUser, getOneUserByEmail, verifyUser } from "../../db.services/user";
 import { comparePassword, hashPassword } from "../../utils/bcrypt";
 import { signToken } from "../../utils/jwt";
 

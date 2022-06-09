@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { comparePassword, hashPassword } from "../../utils/bcrypt";
-import { getOneUserById, updateUser } from "../../services/user";
+import { getOneUserById, updateUser } from "../../db.services/user";
 
 
 
