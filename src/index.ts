@@ -1,7 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express, { Express, Request, Response, NextFunction } from 'express';
+
+// middleware
 import { error500, logger, notFound404, getUserDetails } from './middlewares/common';
+// routes
 import { routes } from './routes';
 
 const app: Express = express();
@@ -15,7 +18,7 @@ app.use(logger);
 app.use(getUserDetails);
 
 routes.forEach(route => {
-    app.use(route.path, route.router);
+    app.use(route.path, (route.middlewares || []), route.router);
 })
 
 // 404 handler

@@ -6,6 +6,7 @@ import mail from './Modules/Mail';
 import order from './Modules/Order';
 import product from './Modules/Product';
 import user from './Modules/User';
+import { isAuthorized } from './middlewares/common';
 
 
 export const routes = [
@@ -19,7 +20,10 @@ export const routes = [
     },
     {
         path: '/cart',
-        router: cart
+        router: cart,
+        middlewares: [
+            isAuthorized
+        ]
     },
     {
         path: '/category',
@@ -31,7 +35,10 @@ export const routes = [
     },
     {
         path: '/order',
-        router: order
+        router: order,
+        middlewares: [
+            isAuthorized
+        ]
     },
     {
         path: '/product',
@@ -39,6 +46,9 @@ export const routes = [
     },
     {
         path: '/user',
-        router: user
+        router: user,
+        middlewares: [
+            isAuthorized
+        ]
     }
 ];

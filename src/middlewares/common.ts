@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import Joi from "joi";
 import { decodeToken } from "../utils/jwt";
-
+import { Prisma } from "@prisma/client";
+import { UserRole } from "src/types/common";
 
 
 
 
 export function notFound404(req: Request, res: Response, next: NextFunction) {
-    const err = new Error('Not Found');
     res.status(404).json({
         message: 'Not Found'
     })
@@ -17,9 +17,14 @@ export function notFound404(req: Request, res: Response, next: NextFunction) {
 
 export function error500(err: any, req: Request, res: Response, next: NextFunction) {
     console.log('Error: ', err);
-    res.status(500).json({
-        message: err.message,
-    })
+    res.status(err.status || 500).json(
+        process.env.NODE_ENV !== 'production' ?
+            {
+                message: err.message,
+                stack: err.stack
+            }
+            : { message: err.message, }
+    )
 }
 
 export function logger(req: Request, res: Response, next: NextFunction) {
@@ -60,4 +65,27 @@ export function JoiValidator(schema?: Joi.Schema) {
         }
         next();
     }
+}
+
+
+export function accessControl(role: UserRole[]) {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const user = req.user;
+        if (!user) return res.status(401).json({
+            message: 'Unauthorized'
+        })
+        if (!role.includes(user?.role)) return res.status(403).json({
+            message: 'Forbidden resource'
+        })
+        next();
+    }
+}
+
+
+export function isAuthorized(req: Request, res: Response, next: NextFunction) {
+    const user = req.user;
+    if (!user) return res.status(401).json({
+        message: 'Unauthorized'
+    })
+    next();
 }

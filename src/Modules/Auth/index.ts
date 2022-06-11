@@ -11,13 +11,13 @@ router.route('/login')
     .post(JoiValidator(authRouteSchema['login']), login)
 
 router.route('/signup')
-    .post(signup)
+    .post(JoiValidator(authRouteSchema['signup']), signup)
 
 router.route('/send-otp')
     .post(sendOtp)
 
 router.route('/verify-otp')
-    .post(verifyOtp)
+    .post(JoiValidator(authRouteSchema['verify-otp']), verifyOtp)
 
 
 export default router;

@@ -3,7 +3,7 @@
     "target": "es2016",                                 
     "removeComments": true,
     "module": "commonjs",                               
-    // "rootDir": "./",                                  
+    "rootDir": "./",                                  
     "baseUrl": "./",                               
     // "paths": {},                                   
     // "rootDirs": [],                                
