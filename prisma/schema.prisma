@@ -188,6 +188,13 @@ model Asset {
   assetId String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  url String
-  category String?
+  urls Json
+  type AssetType?
+}
+
+enum AssetType {
+    product 
+    category_thumb
+    category_banner
+    home_banner
 }

@@ -1,17 +1,24 @@
+import { AssetType } from "@prisma/client";
 import cuid from "cuid";
 import { NextFunction, Request, Response } from "express";
 import path from "path";
 import sharp from "sharp";
+import fs from "fs";
+import { createManyAsset, deleteManyAsset, getAllAsset } from "../../db.services/asset";
 
 
 
 
-export async function uploadImage(req: Request, res: Response, next: NextFunction) {
-    /** 
-     * Products images upload
-     * */
-    const files = req.files as Express.Multer.File[]
-    const outDir = path.resolve(__dirname, '../../../../public/images')
+/** 
+ * Products images upload
+ * */
+
+export async function productImageUpload(req: Request, res: Response, next: NextFunction) {
+
+    const files = req.files?.productImage || [] as Express.Multer.File[]
+
+    const outDir = path.resolve(__dirname, '../../../../public/images/product')
+
     let fileNames: string[] = []
     try {
         await Promise.allSettled(files.map(async (file) => {
@@ -21,30 +28,242 @@ export async function uploadImage(req: Request, res: Response, next: NextFunctio
                 sharp(file.buffer)
                     .resize(700, 700, { fit: 'inside', })
                     .toFormat('png')
-                    .toFile(path.resolve(outDir, fileName + '_700.png')),
+                    .toFile(path.resolve(outDir, fileName + '_large.png')),
                 // 400 x 400
                 sharp(file.buffer)
-                    .resize(400, 400, { fit: 'inside', })
+                    .resize(300, 300, { fit: 'inside', })
                     .toFormat('png')
-                    .toFile(path.resolve(outDir, fileName + '_400.png')),
+                    .toFile(path.resolve(outDir, fileName + '_medium.png')),
                 // 100 x 100
                 sharp(file.buffer)
                     .resize(100, 100, { fit: 'inside', })
                     .toFormat('png')
-                    .toFile(path.resolve(outDir, fileName + '_100.png')),
+                    .toFile(path.resolve(outDir, fileName + '_thumb.png')),
             ])
             fileNames.push(fileName)
             return fileName
         }
         ))
+        // save to db
+        const assets = fileNames.map(fileName => ({
+            assetId: fileName,
+            type: 'product' as AssetType,
+            urls: {
+                thumb: `/images/product/${fileName}_thumb.png`,
+                medium: `/images/product/${fileName}_medium.png`,
+                large: `/images/product/${fileName}_large.png`,
+            }
+        }))
+        const createdImages = await createManyAsset(assets)
         return res.json({
-            images: fileNames.map(image => ({
-                image_large: image + '.png',
-                thumbnail: image + '_100.png',
-                image: image + '_400.png',
-            }))
+            message: 'Product images uploaded successfully',
+            data: createdImages
         })
     } catch (error) {
         next(error)
     }
+}
+
+/** 
+ * Categories Thumb upload
+ * */
+
+export async function categoryThumbUpload(req: Request, res: Response, next: NextFunction) {
+
+    const files = req.files?.categoryImage || [] as Express.Multer.File[]
+    const outDir = path.resolve(__dirname, '../../../../public/images/category')
+
+    let fileNames: string[] = []
+    try {
+        await Promise.allSettled(files.map(async (file) => {
+            const fileName = cuid()
+            await sharp(file.buffer)
+                .resize(100, 100, { fit: 'inside', })
+                .toFormat('png')
+                .toFile(path.resolve(outDir, fileName + '_thumb.png'))
+            fileNames.push(fileName)
+        }))
+        // save to db
+        const assets = fileNames.map(fileName => ({
+            assetId: fileName,
+            type: 'category_thumb' as AssetType,
+            urls: {
+                thumb: `/images/category/${fileName}_thumb.png`,
+            }
+        }))
+        const createdImages = await createManyAsset(assets)
+
+        return res.json({
+            message: 'Category Thumbnail uploaded successfully',
+            data: createdImages
+        })
+    } catch (error) {
+        next(error)
+    }
+
+}
+
+/** 
+ * Categories Banner upload
+ * */
+
+export async function categoryBannerUpload(req: Request, res: Response, next: NextFunction) {
+
+    const files = req.files?.categoryBanner || [] as Express.Multer.File[]
+    const outDir = path.resolve(__dirname, '../../../../public/images/category')
+
+    let fileNames: string[] = []
+
+    try {
+        await Promise.allSettled(files.map(async (file) => {
+            const fileName = cuid()
+            // large
+            await sharp(file.buffer)
+                .resize(1920, 800, { fit: 'inside', })
+                .toFormat('png')
+                .toFile(path.resolve(outDir, fileName + '_large.png'))
+            // medium
+            await sharp(file.buffer)
+                .resize(960, 400, { fit: 'inside', })
+                .toFormat('png')
+                .toFile(path.resolve(outDir, fileName + '_medium.png'))
+            // mobile 
+            await sharp(file.buffer)
+                .resize(400, 200, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+                .toFormat('png')
+                .toFile(path.resolve(outDir, fileName + '_mobile.png'))
+
+            fileNames.push(fileName)
+        }))
+        // save to db
+        const assets = fileNames.map(fileName => ({
+            assetId: fileName,
+            type: 'category_banner' as AssetType,
+            urls: {
+                large: `/images/category/banner/${fileName}_large.png`,
+                medium: `/images/category/banner/${fileName}_medium.png`,
+                mobile: `/images/category/banner/${fileName}_mobile.png`,
+            }
+        }))
+        const createdImages = await createManyAsset(assets)
+        return res.json({
+            message: 'Category Banner uploaded successfully',
+            data: createdImages
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+/** 
+* Home banner images upload
+* */
+
+export async function homeBannerUpload(req: Request, res: Response, next: NextFunction) {
+
+    const files = req.files?.homeBanner || [] as Express.Multer.File[]
+    const outDir = path.resolve(__dirname, '../../../../public/images/banner/home')
+
+
+    let fileNames: string[] = []
+
+    try {
+        await Promise.allSettled(files.map(async (file) => {
+            const fileName = cuid()
+            // large
+            await sharp(file.buffer)
+                .resize(1920, 800, { fit: 'inside', })
+                .toFormat('png')
+                .toFile(path.resolve(outDir, fileName + '_large.png'))
+            // medium
+            await sharp(file.buffer)
+                .resize(960, 400, { fit: 'inside', })
+                .toFormat('png')
+                .toFile(path.resolve(outDir, fileName + '_medium.png'))
+            // mobile
+            await sharp(file.buffer)
+                .resize(400, 200, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+                .toFormat('png')
+                .toFile(path.resolve(outDir, fileName + '_mobile.png'))
+
+            fileNames.push(fileName)
+        }))
+        // save to db
+        const assets = fileNames.map(fileName => ({
+            assetId: fileName,
+            type: 'home_banner' as AssetType,
+            urls: {
+                large: `/images/banner/home/${fileName}_large.png`,
+                medium: `/images/banner/home/${fileName}_medium.png`,
+                mobile: `/images/banner/home/${fileName}_mobile.png`,
+            }
+        }))
+        const createdImages = await createManyAsset(assets)
+
+        return res.json({
+            message: 'Home Banner uploaded successfully',
+            data: createdImages
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+
+export async function getAllImages(req: Request, res: Response, next: NextFunction) {
+    try {
+        const assets = await getAllAsset(req.query)
+        return res.json(assets)
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+export async function deleteImages(req: Request, res: Response, next: NextFunction) {
+
+    try {
+        const { type, assetIdes } = req.body
+        const deletedAssets = await deleteManyAsset(assetIdes)
+        const productDir = path.resolve(__dirname, '../../../../public/images/product')
+        const categoryDir = path.resolve(__dirname, '../../../../public/images/category')
+        const bannerDir = path.resolve(__dirname, '../../../../public/images/banner/home')
+        switch (type) {
+            case 'product':
+                await Promise.allSettled(assetIdes.map(async (id: string) => {
+                    await fs.unlinkSync(path.resolve(productDir, id + '_thumb.png'))
+                    await fs.unlinkSync(path.resolve(productDir, id + '_large.png'))
+                    await fs.unlinkSync(path.resolve(productDir, id + '_medium.png'))
+                }))
+                break;
+            case 'category_thumb':
+                await Promise.allSettled(assetIdes.map(async (id: string) => {
+                    await fs.unlinkSync(path.resolve(categoryDir, id + '_thumb.png'))
+                }))
+                break
+            case 'category_banner':
+                await Promise.allSettled(assetIdes.map(async (id: string) => {
+                    await fs.unlinkSync(path.resolve(categoryDir, id + '_large.png'))
+                    await fs.unlinkSync(path.resolve(categoryDir, id + '_medium.png'))
+                    await fs.unlinkSync(path.resolve(categoryDir, id + '_mobile.png'))
+                }))
+                break
+            case 'home_banner':
+                await Promise.allSettled(assetIdes.map(async (id: string) => {
+                    await fs.unlinkSync(path.resolve(bannerDir, id + '_large.png'))
+                    await fs.unlinkSync(path.resolve(bannerDir, id + '_medium.png'))
+                    await fs.unlinkSync(path.resolve(bannerDir, id + '_mobile.png'))
+                }))
+                break
+        }
+
+        res.status(200).json({
+            message: 'Image deleted successfully',
+            // data: deletedAssets
+        })
+    } catch (error) {
+        next(error)
+    }
+
 }

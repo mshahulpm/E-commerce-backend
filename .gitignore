@@ -3,4 +3,6 @@ node_modules
 .env
 prisma/migrations
 dist
-public/images/*
+public/images/**/*.png
+public/images/**/*.jpg
+public/images/**/*.jpeg

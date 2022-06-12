@@ -19,13 +19,19 @@ const upload = multer({
 })
 
 
-const uploadFiles = upload.array("images", 10); // limit to 10 images
+const uploadFiles = upload.fields([
+    { name: 'productImage', maxCount: 10 },
+    { name: 'categoryImage', maxCount: 10 },
+    { name: 'categoryBanner', maxCount: 10 },
+    { name: 'homeBanner', maxCount: 10 },
+])
 export const uploadImagesMiddleWare = (req: Request, res: Response, next: NextFunction) => {
     uploadFiles(req, res, err => {
         if (err instanceof multer.MulterError) { // A Multer error occurred when uploading.
             if (err.code === "LIMIT_UNEXPECTED_FILE") { // Too many images exceeding the allowed limit
                 return res.status(400).json({
-                    message: "Too many images exceeding the allowed limit"
+                    message: "Too many images exceeding the allowed limit",
+                    error: err
                 });
             }
         } else if (err) {

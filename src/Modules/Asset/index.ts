@@ -1,44 +1,50 @@
-import sharp from 'sharp';
 import { uploadImagesMiddleWare } from '../../config/multer';
-import path from 'path'
 import { NextFunction, Request, Response, Router } from "express";
-import cuid from 'cuid';
-import { uploadImage } from './controller';
+import { JoiValidator } from '../../middlewares/common';
+import { AssetRouteSchema } from './inputSchema';
+import {
+    productImageUpload,
+    categoryBannerUpload,
+    categoryThumbUpload,
+    homeBannerUpload,
+    getAllImages,
+    deleteImages
+} from './controller';
+
 const router = Router();
 
 
 router.route('/')
-    .get((req: Request, res: Response) => {
-        res.status(200).json({ message: 'welcome to asset...' });
-    })
+    .get(JoiValidator(AssetRouteSchema['all-assets']), getAllImages)
+    .delete(JoiValidator(AssetRouteSchema['delete-all-assets']), deleteImages)
 
 router
-    .post('/upload', uploadImagesMiddleWare, uploadImage
-        // async (req: Request, res: Response, next: NextFunction) => {
-        //     try {
-        //         const files = req.files as Express.Multer.File[]
+    .post('/upload', uploadImagesMiddleWare,
 
+        (req: Request, res: Response, next: NextFunction) => {
 
-        //         const outDir = path.resolve(__dirname, '../../../../public/assets')
-        //         await sharp(files[0].buffer)
-        //             .resize(1000, 1000, {
-        //                 fit: 'inside',
-        //             }).
-        //             toFormat('png')
-        //             .toFile(
-        //                 path.resolve(outDir, cuid() + '.png')
-        //             )
-
-        //         return res.json({
-        //             fileName: null,
-        //         })
-        //     } catch (error) {
-        //         next(error)
-        //     }
-        // }
+            if (req.files?.productImage) {
+                productImageUpload(req, res, next)
+            }
+            else if (req.files?.categoryImage) {
+                categoryThumbUpload(req, res, next)
+            }
+            else if (req.files?.categoryBanner) {
+                categoryBannerUpload(req, res, next)
+            }
+            else if (req.files?.homeBanner) {
+                homeBannerUpload(req, res, next)
+            }
+            else {
+                next({
+                    message: "No Images found",
+                    status: 400
+                })
+            }
+        },
     )
-router.route('/demo').get(async (req: Request, res: Response) => {
-    res.send('hello')
-})
+
+
+
 
 export default router;
