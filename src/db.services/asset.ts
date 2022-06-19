@@ -11,7 +11,7 @@ export type GET_ALL_ASSET = {
 export async function getAllAsset(args?: GET_ALL_ASSET) {
 
     const { orderBy = 'desc', limit = 10, page = 0, type } = args || {};
-    console.log(args);
+
     return await asset.findMany({
         where: {
             type,
@@ -19,8 +19,9 @@ export async function getAllAsset(args?: GET_ALL_ASSET) {
         orderBy: {
             createdAt: orderBy
         },
-        skip: page * limit,
-        take: limit,
+        skip: +page * +limit,
+        take: +limit,
+
     })
 }
 

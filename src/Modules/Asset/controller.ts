@@ -5,6 +5,7 @@ import path from "path";
 import sharp from "sharp";
 import fs from "fs";
 import { createManyAsset, deleteManyAsset, getAllAsset } from "../../db.services/asset";
+import { assetCount } from "../../db.services/count";
 
 
 
@@ -198,11 +199,15 @@ export async function homeBannerUpload(req: Request, res: Response, next: NextFu
                 mobile: `/images/banner/home/${fileName}_mobile.png`,
             }
         }))
-        const createdImages = await createManyAsset(assets)
+
+        await createManyAsset(assets)
 
         return res.json({
             message: 'Home Banner uploaded successfully',
-            data: createdImages
+            data: {
+                createdAsset: assets,
+                createdCount: assets.length
+            }
         })
     } catch (error) {
         next(error)
@@ -213,8 +218,15 @@ export async function homeBannerUpload(req: Request, res: Response, next: NextFu
 
 export async function getAllImages(req: Request, res: Response, next: NextFunction) {
     try {
-        const assets = await getAllAsset(req.query)
-        return res.json(assets)
+        // const assets = await getAllAsset(req.query)
+        // const count = await assetCount()
+        const [assets, count] = await Promise.all([getAllAsset(req.query), assetCount()])
+        return res.json({
+            page: +req.query.page! || 1,
+            limit: +req.query.limit! || 10,
+            count,
+            assets
+        })
     } catch (error) {
         next(error)
     }
@@ -260,7 +272,11 @@ export async function deleteImages(req: Request, res: Response, next: NextFuncti
 
         res.status(200).json({
             message: 'Image deleted successfully',
-            // data: deletedAssets
+            data: {
+                deletedIdes: assetIdes,
+                deletedType: type,
+                deletedCount: deletedAssets
+            }
         })
     } catch (error) {
         next(error)

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2016",                                 
-    "removeComments": true,
+    "removeComments": false,
     "module": "commonjs",                               
     "rootDir": "./",                                  
     "baseUrl": "./",                               

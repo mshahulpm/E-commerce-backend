@@ -1,6 +1,6 @@
 import joi from 'joi';
 import { RouteSchema } from 'src/types/common';
-
+import { isCuid } from 'cuid'
 
 
 export const AssetRouteSchema: RouteSchema = {
@@ -12,7 +12,14 @@ export const AssetRouteSchema: RouteSchema = {
     }),
     'delete-all-assets': joi.object({
         type: joi.string().valid('product', 'category_thumb', 'category_banner', 'home_banner').required(),
-        assetIdes: joi.array().items(joi.string()).required().max(50)
+        assetIdes: joi.array().items(
+            joi.string().custom((id: string) => {
+                if (!isCuid(id)) {
+                    throw new Error('Invalid id')
+                }
+                return id
+            })
+        ).required().max(50)
     }),
 }
 
