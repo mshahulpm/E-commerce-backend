@@ -1,3 +1,7 @@
+/**
+ * Assets module documentation
+ */
+
 const assetSchema = {
     type: "object",
     properties: {

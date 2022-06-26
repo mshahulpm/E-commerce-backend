@@ -1,4 +1,5 @@
 import { assetDoc } from "./asset"
+import { AuthDoc } from "./auth"
 
 
 export const swaggerConfig = {
@@ -50,6 +51,7 @@ export const swaggerConfig = {
     ],
     "paths": {
         ...assetDoc.paths,
+        ...AuthDoc.paths
     },
     "components": {
         "schemas": {
@@ -92,7 +94,8 @@ export const swaggerConfig = {
                 "bearerFormat": "JWT",
                 "in": "header",
                 "name": "Authorization",
-                "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
+                "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                "persistAuthorization": true
             }
         }
     },

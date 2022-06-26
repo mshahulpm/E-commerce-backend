@@ -17,7 +17,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         }
         const isValid = await comparePassword(password, user.password);
         if (!isValid) {
-            return res.status(401).json({
+            return res.status(403).json({
                 message: 'Invalid password'
             })
         }
@@ -60,7 +60,7 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
             email: newUser.email
         });
         res.status(201).json({
-            message: 'User created successfully',
+            message: 'Otp send successfully',
             accessToken
         })
     } catch (error) {
@@ -74,7 +74,7 @@ export function sendOtp(req: Request, res: Response, next: NextFunction) {
 
     const user = req.user
     if (!user) {
-        return res.status(401).json({
+        return res.status(404).json({
             message: 'User not found'
         })
     }
@@ -89,7 +89,7 @@ export async function verifyOtp(req: Request, res: Response, next: NextFunction)
     const user = req.user
     const otp = req.body.otp
     if (!user) {
-        return res.status(401).json({
+        return res.status(404).json({
             message: 'User not found'
         })
     }
@@ -99,7 +99,7 @@ export async function verifyOtp(req: Request, res: Response, next: NextFunction)
             message: 'Email verified successfully'
         })
     } else {
-        return res.status(401).json({
+        return res.status(400).json({
             message: 'Invalid otp'
         })
     }
