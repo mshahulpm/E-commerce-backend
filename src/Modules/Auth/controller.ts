@@ -24,7 +24,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         const accessToken = await signToken({
             userId: user.userId,
             role: user.roles,
-            email: user.email
+            email: user.email,
+            name: `${user.firstName} ${user.lastName}`
         })
         // @ts-ignore
         delete user?.password;

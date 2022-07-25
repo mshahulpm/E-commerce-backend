@@ -35,6 +35,10 @@ export async function createManyAsset(assets: Prisma.AssetCreateInput[]) {
 
 export async function deleteManyAsset(assetIdes: string[]) {
     return await asset.deleteMany({
-
+        where: {
+            assetId: {
+                in: assetIdes
+            }
+        }
     });
 }

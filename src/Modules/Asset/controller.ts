@@ -27,17 +27,17 @@ export async function productImageUpload(req: Request, res: Response, next: Next
             await Promise.allSettled([
                 // 700 x 700
                 sharp(file.buffer)
-                    .resize(700, 700, { fit: 'inside', })
+                    .resize(700, 700, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
                     .toFormat('png')
                     .toFile(path.resolve(outDir, fileName + '_large.png')),
                 // 400 x 400
                 sharp(file.buffer)
-                    .resize(300, 300, { fit: 'inside', })
+                    .resize(300, 300, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
                     .toFormat('png')
                     .toFile(path.resolve(outDir, fileName + '_medium.png')),
                 // 100 x 100
                 sharp(file.buffer)
-                    .resize(100, 100, { fit: 'inside', })
+                    .resize(100, 100, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
                     .toFormat('png')
                     .toFile(path.resolve(outDir, fileName + '_thumb.png')),
             ])
@@ -58,7 +58,7 @@ export async function productImageUpload(req: Request, res: Response, next: Next
         const createdImages = await createManyAsset(assets)
         return res.json({
             message: 'Product images uploaded successfully',
-            data: createdImages
+            data: assets
         })
     } catch (error) {
         next(error)
@@ -141,9 +141,9 @@ export async function categoryBannerUpload(req: Request, res: Response, next: Ne
             assetId: fileName,
             type: 'category_banner' as AssetType,
             urls: {
-                large: `/images/category/banner/${fileName}_large.png`,
-                medium: `/images/category/banner/${fileName}_medium.png`,
-                mobile: `/images/category/banner/${fileName}_mobile.png`,
+                large: `/images/category/${fileName}_large.png`,
+                medium: `/images/category/${fileName}_medium.png`,
+                mobile: `/images/category/${fileName}_mobile.png`,
             }
         }))
         const createdImages = await createManyAsset(assets)
@@ -218,12 +218,14 @@ export async function homeBannerUpload(req: Request, res: Response, next: NextFu
 
 export async function getAllImages(req: Request, res: Response, next: NextFunction) {
     try {
-        // const assets = await getAllAsset(req.query)
-        // const count = await assetCount()
-        const [assets, count] = await Promise.all([getAllAsset(req.query), assetCount()])
+        const page = +req.query.page! || 0
+        const limit = +req.query.limit! || 0
+        const type = (req.query.type || 'product') as AssetType
+        const [assets, count] = await Promise.all([getAllAsset(req.query), assetCount(type)])
         return res.json({
-            page: +req.query.page! || 1,
-            limit: +req.query.limit! || 10,
+            page,
+            limit,
+            lastPage: ((page + 1) * limit) >= count,
             count,
             assets
         })

@@ -81,29 +81,22 @@ model Product {
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   name            String
+  sku             String @unique
+  slug            String @unique
   description     String?            @default("")
   categories      CategoryProducts[]
-  price           Float
-  stock           Int
-  discount        Float
-  images          ProductImage[]
-  max_quantity    Int
-  min_quantity    Int
+  price           Float              @default(0)
+  stock           Int                @default(0)
+  discount        Float?              
+  images          Json?
+  max_quantity    Int?
   seo_title       String             @default("")
   seo_description String?            @default("")
   seo_keywords    String?            @default("")
-  weight          Float?
+  weight          Float?             @default(0)
   cartItems       CartItem[]
   orderItems      OrderItem[]
-}
-
-model ProductImage {
-  productImageId String   @id @default(cuid())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  url            String
-  productId      String
-  product        Product  @relation(fields: [productId], references: [productId])
+  active          Boolean @default(false)
 }
 
 model Cart {
@@ -176,7 +169,7 @@ model Payment {
   paymentId     String   @id @default(cuid())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  orderId       String
+  orderId       String   @unique
   order         Order    @relation(fields: [orderId], references: [orderId])
   amount        Float
   paymentStatus PaymentStatus @default(PENDING)
